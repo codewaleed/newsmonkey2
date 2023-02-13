@@ -31,18 +31,12 @@ export const News = (props) => {
   }, []);
 
   const fetchData = async () => {
-    setPage(page + 1);
-    const url = `https://newsapi.org/v2/top-headlines?country=${props.country}&category=${props.category}&apiKey=${props.apikey}&page=${page}&pageSize=${props.pageSize}`;
+    
+    const url = `https://newsapi.org/v2/top-headlines?country=${props.country}&category=${props.category}&apiKey=${props.apikey}&page=${page+1}&pageSize=${props.pageSize}`;
     // this.setState({ loading: true });
-
+    setPage(page + 1);
     let data = await fetch(url);
     let parsedData = await data.json();
-
-    // this.setState({
-    //   articles: this.state.articles.concat(parsedData.articles),
-    //   totalResults: parsedData.totalResults,
-    //   //loading: false,
-    // });
 
     setArticles(articles.concat(parsedData.articles));
     setTotalResults(parsedData.totalResults);
@@ -50,7 +44,7 @@ export const News = (props) => {
 
   return (
     <div className="container my-3">
-      <h1 className="text-center">Welcome to Taza Khabar</h1>
+      <h1 className="text-center mt-5 pt-5">Welcome to Taza Khabar</h1>
       {loading && <Spinner />}
 
       <InfiniteScroll
