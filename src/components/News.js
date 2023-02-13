@@ -1,168 +1,90 @@
-import React, { Component } from "react";
+import React, { useEffect, useState } from "react";
 import Newsitem from "./Newsitem";
 import Spinner from "./Spinner";
 import InfiniteScroll from "react-infinite-scroll-component";
 
-export class News extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      articles: [],
-      page: 1,
-      loading: true,
-      totalResults: 0,
-    };
-  }
+export const News = (props) => {
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalResults, setTotalResults] = useState(0);
 
-  async componentUpdate() {
-    this.props.setProgress(10);
-    const url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=${this.props.apikey}&page=${this.state.page}&pageSize=${this.props.pageSize}`;
+  const componentUpdate = async () => {
+    props.setProgress(10);
+    const url = `https://newsapi.org/v2/top-headlines?country=${props.country}&category=${props.category}&apiKey=${props.apikey}&page=${page}&pageSize=${props.pageSize}`;
     //this.setState({ loading: true });
-    this.props.setProgress(50);
+    props.setProgress(50);
     let data = await fetch(url);
-
-   
-
     let parsedData = await data.json();
 
-    this.props.setProgress(80);
+    props.setProgress(80);
 
-    this.setState({
-      articles: parsedData.articles,
-      totalResults: parsedData.totalResults,
-      loading: false,
-    });
-    this.props.setProgress(100);
-  }
-  componentDidMount = async () => {
-    this.componentUpdate();
+    setArticles(parsedData.articles);
+    setLoading(false);
+    setTotalResults(parsedData.totalResults);
+
+    props.setProgress(100);
   };
-  // handlePre = async () => {
 
-  //   this.setState({ page: this.state.page - 1 });
+  useEffect(() => {
+    componentUpdate();
+  }, []);
 
-  //   this.componentUpdate();
-  //   console.log(this.state.articles);
-  //   console.log(this.state.totalResults);
-  //   // let url = `https://newsapi.org/v2/top-headlines?country=${
-  //   //   this.props.country
-  //   // }&category=${
-  //   //   this.props.category
-  //   // }&apiKey=5caa54c9641d4f24befa8c2b731a96f7&page=${
-  //   //   this.state.page - 1
-  //   // }&pageSize=${this.props.pageSize}`;
-  //   // this.setState({ loading: true });
-
-  //   // let data = await fetch(url);
-  //   // let parsedData = await data.json();
-  //   // console.log(parsedData);
-  //   // this.setState({
-  //   //   articles: parsedData.articles,
-  //   //   page: this.state.page - 1,
-  //   //   loading: false,
-  //   // });
-  // };
-  // handleNex = async () => {
-
-  //   this.setState({ page: this.state.page + 1 });
-  //   this.componentUpdate();
-  //   console.log(this.state.articles);
-  //   console.log(this.state.totalResults)
-  //   // let url = `https://newsapi.org/v2/top-headlines?country=${
-  //   //   this.props.country
-  //   // }&category=${
-  //   //   this.props.category
-  //   // }&apiKey=5caa54c9641d4f24befa8c2b731a96f7&page=${
-  //   //   this.state.page + 1
-  //   // }&pageSize=${this.props.pageSize}`;
-  //   // this.setState({ loading: true });
-
-  //   // let data = await fetch(url);
-  //   // let parsedData = await data.json();
-  //   // console.log(parsedData);
-  //   // this.setState({
-  //   //   articles: parsedData.articles,
-  //   //   page: this.state.page + 1,
-  //   //   loading: false,
-  //   // });
-  // };
-  fetchData = async () => {
-    this.setState({ page: this.state.page + 1 });
-    const url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=${this.props.apikey}&page=${this.state.page}&pageSize=${this.props.pageSize}`;
+  const fetchData = async () => {
+    setPage(page + 1);
+    const url = `https://newsapi.org/v2/top-headlines?country=${props.country}&category=${props.category}&apiKey=${props.apikey}&page=${page}&pageSize=${props.pageSize}`;
     // this.setState({ loading: true });
 
     let data = await fetch(url);
     let parsedData = await data.json();
 
-    this.setState({
-      articles: this.state.articles.concat(parsedData.articles),
-      totalResults: parsedData.totalResults,
-      //loading: false,
-    });
+    // this.setState({
+    //   articles: this.state.articles.concat(parsedData.articles),
+    //   totalResults: parsedData.totalResults,
+    //   //loading: false,
+    // });
+
+    setArticles(articles.concat(parsedData.articles));
+    setTotalResults(parsedData.totalResults);
   };
-  render() {
-    return (
-      <div className="container my-3">
-        <>
-          <h1 className="text-center">Welcome to taza Khabar</h1>
-          {this.state.loading && <Spinner />}
 
-          <InfiniteScroll
-            dataLength={this.state.articles.length} //This is important field to render the next data
-            next={this.fetchData}
-            hasMore={this.state.articles.length !== this.state.totalResults}
-            loader={<Spinner />}
-          >
-            <div className="container my-4 ">
-              <div className="row">
-                {this.state.articles.map((element) => {
-                  return (
-                    <div className="col-md-4 my-3" key={element.url}>
-                      <Newsitem
-                        title={element.title ? element.title.slice(0, 88) : ""}
-                        description={
-                          element.description
-                            ? element.description.slice(0, 99)
-                            : ""
-                        }
-                        newsUrl={element.url ? element.url : ""}
-                        imageUrl={element.urlToImage ? element.urlToImage : ""}
-                        author={!element.author ? "Unknown" : element.author}
-                        publishAt={
-                          !element.publishedAt ? "Unknown" : element.publishedAt
-                        }
-                        source={element.source.name}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </InfiniteScroll>
+  return (
+    <div className="container my-3">
+      <h1 className="text-center">Welcome to Taza Khabar</h1>
+      {loading && <Spinner />}
 
-          {/* <div className="container">
-          <button
-            type="button"
-            disabled={this.state.page <= 1}
-            className="btn btn-dark"
-            onClick={this.handlePre}
-          >
-            Previous
-          </button>
-          <button
-            type="button"
-            className="btn btn-dark mx-3"
-            onClick={this.handleNex}
-            disabled={
-              this.state.page + 1 >
-              Math.ceil(this.state.totalResults / this.props.pageSize)
-            }
-          >
-            Next
-          </button>
-        </div> */}
-        </>
-      </div>
-    );
-  }
-}
+      <InfiniteScroll
+        dataLength={articles.length} //This is important field to render the next data
+        next={fetchData}
+        hasMore={articles.length !== totalResults}
+        loader={<Spinner />}
+      >
+        <div className="container my-4 ">
+          <div className="row">
+            {articles.map((element) => {
+              return (
+                <div className="col-md-4 my-3" key={element.url}>
+                  <Newsitem
+                    title={element.title ? element.title.slice(0, 88) : ""}
+                    description={
+                      element.description
+                        ? element.description.slice(0, 99)
+                        : ""
+                    }
+                    newsUrl={element.url ? element.url : ""}
+                    imageUrl={element.urlToImage ? element.urlToImage : ""}
+                    author={!element.author ? "Unknown" : element.author}
+                    publishAt={
+                      !element.publishedAt ? "Unknown" : element.publishedAt
+                    }
+                    source={element.source.name}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </InfiniteScroll>
+    </div>
+  );
+};
